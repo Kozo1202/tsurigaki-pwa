@@ -1,45 +1,78 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ツリガキ系統検索</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-512.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>つりがき系譜検索</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Serif JP', serif;
+      background-color: #fffbe6;
+      color: #333;
+      padding: 1em;
+    }
+    input {
+      font-size: 1.2em;
+      padding: 0.5em;
+      width: 100%;
+      margin-bottom: 1em;
+    }
+    .result {
+      padding-top: 1em;
+      border-top: 1px solid #ccc;
+    }
+    .entry {
+      margin-bottom: 1em;
+    }
+    .name {
+      font-weight: bold;
+      color: #663300;
+    }
+    .lines {
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
-  <h1>ツリガキ系統検索</h1>
-  <input type="text" id="search" placeholder="名前を入力（例：アマテル）">
-  <div id="result"></div>
+  <h1>つりがき系譜検索システム</h1>
+  <input type="text" id="search" placeholder="名前を入力してください（例：アマテルカミ）" />
+  <div class="result" id="result"></div>
+
   <script>
     let data = [];
 
-    async function loadData() {
-      const res = await fetch('tsurigaki_data.json');
-      data = await res.json();
-    }
+    // JSON読み込み
+    fetch("tsurigaki_index.json")
+      .then(res => res.json())
+      .then(json => data = json)
+      .catch(err => console.error("データ読み込み失敗:", err));
 
-    function search() {
+    document.getElementById("search").addEventListener("input", () => {
       const keyword = document.getElementById("search").value.trim();
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
       if (!keyword) return;
 
-      const entry = data.find(e => e.名前 === keyword);
-      if (entry) {
+      const results = data.filter(entry => entry.名前.includes(keyword));
+
+      results.forEach(entry => {
         const div = document.createElement("div");
         div.className = "entry";
-        div.innerHTML = `<h2>${entry.名前}</h2><pre>${entry.系統.join("\n")}</pre>`;
-        resultDiv.appendChild(div);
-      } else {
-        resultDiv.textContent = "見つかりませんでした。";
-      }
-    }
 
-    document.getElementById("search").addEventListener("input", search);
-    loadData();
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = entry.名前;
+
+        const lines = document.createElement("div");
+        lines.className = "lines";
+        lines.innerHTML = entry.系譜.join("<br>");
+
+        div.appendChild(name);
+        div.appendChild(lines);
+        resultDiv.appendChild(div);
+      });
+    });
   </script>
 </body>
 </html>
