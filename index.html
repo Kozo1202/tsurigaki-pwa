@@ -13,7 +13,7 @@
       color: #333;
       padding: 1em;
     }
-    input {
+    input, select {
       font-size: 1.2em;
       padding: 0.5em;
       width: 100%;
@@ -37,7 +37,7 @@
       body {
         font-size: 1em;
       }
-      input {
+      input, select {
         font-size: 1em;
       }
     }
@@ -45,7 +45,19 @@
 </head>
 <body>
   <h1>つりがき索引システム</h1>
-  <input type="text" id="search" placeholder="ご神名や系譜名を入力 (例:とようけ、そさのを)" />
+
+  <!-- 🔘 モード選択 -->
+  <label><input type="radio" name="mode" value="name" checked> ご神名で検索</label>
+  <label><input type="radio" name="mode" value="line"> 系譜名で検索</label>
+
+  <!-- 🔍 ご神名の入力欄 -->
+  <input type="text" id="searchName" placeholder="例：あまてるかみ" />
+
+  <!-- 🔽 系譜名のプルダウン -->
+  <select id="searchLine" style="display: none;">
+    <option value="">系譜を選択してください</option>
+  </select>
+
   <div class="result" id="result"></div>
 
   <script>
@@ -61,27 +73,61 @@
       .then(res => res.json())
       .then(json => {
         data = json;
-        showResults(""); // 初期表示：全件ふりがな順
+        showResults(); // 初期表示
+
+        // 🔽 系譜名の重複除去＋ソート＋プルダウン生成
+        const uniqueLines = [...new Set(data.flatMap(entry => entry.系譜名))].sort();
+        const lineSelect = document.getElementById("searchLine");
+        uniqueLines.forEach(line => {
+          const option = document.createElement("option");
+          option.value = line;
+          option.textContent = line;
+          lineSelect.appendChild(option);
+        });
       })
       .catch(err => console.error("データ読み込み失敗:", err));
 
-    document.getElementById("search").addEventListener("input", () => {
-      const keyword = toKatakana(document.getElementById("search").value.trim());
-      showResults(keyword);
+    // 🔁 モード切替
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        document.getElementById("searchName").style.display = mode === "name" ? "block" : "none";
+        document.getElementById("searchLine").style.display = mode === "line" ? "block" : "none";
+        showResults(); // 全件表示
+      });
     });
 
-    function showResults(keyword) {
+    // ご神名の入力
+    document.getElementById("searchName").addEventListener("input", () => {
+      const keyword = toKatakana(document.getElementById("searchName").value.trim());
+      showResults(keyword, "name");
+    });
+
+    // 系譜名のプルダウン
+    document.getElementById("searchLine").addEventListener("change", () => {
+      const line = document.getElementById("searchLine").value;
+      showResults(line, "line");
+    });
+
+    function showResults(keyword = "", mode = "name") {
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
-      const filtered = keyword
-        ? data.filter(entry =>
-            (entry.ふりがな && toKatakana(entry.ふりがな).includes(keyword)) ||
-            (entry.系譜名 && entry.系譜名.some(k => toKatakana(k).includes(keyword)))
-          )
-        : data;
+      let filtered = [];
 
-      // 🔸常にふりがな順でソート
+      if (!keyword) {
+        filtered = data;
+      } else if (mode === "line") {
+        filtered = data.filter(entry =>
+          entry.系譜名 && entry.系譜名.includes(keyword)
+        );
+      } else {
+        filtered = data.filter(entry =>
+          entry.ふりがな && toKatakana(entry.ふりがな).includes(toKatakana(keyword))
+        );
+      }
+
+      // ふりがな順でソート
       filtered.sort((a, b) =>
         toKatakana(a.ふりがな || "").localeCompare(toKatakana(b.ふりがな || ""))
       );
