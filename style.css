@@ -1,0 +1,18 @@
+body {
+  font-family: "Noto Serif JP", serif;
+  background-color: #fdfaf3;
+  padding: 2em;
+  color: #333;
+}
+input {
+  font-size: 1.2em;
+  padding: 0.5em;
+  width: 100%;
+  margin-bottom: 1em;
+}
+.entry {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 1em;
+  border-radius: 8px;
+}

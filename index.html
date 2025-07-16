@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ツリガキ系統検索</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+</head>
+<body>
+  <h1>ツリガキ系統検索</h1>
+  <input type="text" id="search" placeholder="名前を入力（例：アマテル）">
+  <div id="result"></div>
+  <script>
+    let data = [];
+
+    async function loadData() {
+      const res = await fetch('tsurigaki_data.json');
+      data = await res.json();
+    }
+
+    function search() {
+      const keyword = document.getElementById("search").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+      if (!keyword) return;
+
+      const entry = data.find(e => e.名前 === keyword);
+      if (entry) {
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `<h2>${entry.名前}</h2><pre>${entry.系統.join("\n")}</pre>`;
+        resultDiv.appendChild(div);
+      } else {
+        resultDiv.textContent = "見つかりませんでした。";
+      }
+    }
+
+    document.getElementById("search").addEventListener("input", search);
+    loadData();
+  </script>
+</body>
+</html>
