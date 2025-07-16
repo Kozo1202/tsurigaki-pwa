@@ -20,13 +20,16 @@
       margin-bottom: 1em;
     }
     .radio-group {
-      display: block;
+      display: flex;
+      gap: 2em;
+      align-items: center;
       margin-bottom: 1em;
     }
     .radio-label {
-      display: block;
-      margin-bottom: 0.3em;
       font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
     }
     .result {
       padding-top: 1em;
@@ -49,16 +52,20 @@
       input, select {
         font-size: 1em;
       }
+      .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 <body>
   <h1>つりがき索引システム</h1>
 
-  <!-- 🔘 モード選択 -->
+  <!-- 🔘 モード選択 横並び -->
   <div class="radio-group">
-    <label class="radio-label"><input type="radio" name="mode" value="name" checked> ご神名で検索</label>
-    <label class="radio-label"><input type="radio" name="mode" value="line"> 系譜名で検索</label>
+    <label class="radio-label"><input type="radio" name="mode" value="name" checked>ご神名で検索</label>
+    <label class="radio-label"><input type="radio" name="mode" value="line">系譜名で検索</label>
   </div>
 
   <!-- 🔍 ご神名の入力欄 -->
