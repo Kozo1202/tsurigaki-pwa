@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>つりがき系譜検索</title>
+  <title>つりがき索引システム</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
@@ -36,9 +36,17 @@
   </style>
 </head>
 <body>
-  <h1>つりがき系譜検索システム</h1>
-  <input type="text" id="search" placeholder="ご神名を入力してください（例：アマテルカミ、ソサノヲ）"/>
+  <h1>つりがき索引システム</h1>
+  <input type="text" id="search" placeholder="ご神名を入力 (例:とようけ、そさのを)"/>
   <div class="result" id="result"></div>
+
+  <script>
+    function toKatakana(str) {
+      return str.replace(/[\u3041-\u3096]/g, ch =>
+         String.fromCharCode(ch.charCodeAt(0) + 0x60)
+      );
+    }
+  </script>
 
   <script>
     let data = [];
@@ -49,37 +57,38 @@
       .then(json => data = json)
       .catch(err => console.error("データ読み込み失敗:", err));
 
-document.getElementById("search").addEventListener("input", () => {
-  const keyword = document.getElementById("search").value.trim();
-  const resultDiv = document.getElementById("result");
-  resultDiv.innerHTML = "";
-  if (!keyword) return;
+    document.getElementById("search").addEventListener("input", () => {
+      const keyword = toKatakana(document.getElementById("search").value.trim());
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
 
-  const results = data.filter(entry =>
-    entry.ご神名 && entry.ご神名.toLowerCase().includes(keyword.toLowerCase())
-  );
+      if (!keyword) return;
 
-  // 🔸ここで1回だけ件数表示
-  const count = document.createElement("div");
-  count.textContent = `${results.length} 件見つかりました`;
-  resultDiv.appendChild(count);
+      const results = data.filter(entry =>
+          entry.ふりがな && toKatakana(entry.ふりがな).includes(keyword)
+      );
 
-  results.forEach(entry => {
-    const div = document.createElement("div");
-    div.className = "entry";
+      const count = document.createElement("div");
+      count.textContent = `${results.length} 件見つかりました`;
+      resultDiv.appendChild(count);
 
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = entry.ご神名;
+      results.forEach(entry => {
+        const div = document.createElement("div");
+        div.className = "entry";
 
-    const lines = document.createElement("div");
-    lines.className = "lines";
-    lines.innerHTML = entry.系譜名.join("<br>");
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = entry.ご神名;
 
-    div.appendChild(name);
-    div.appendChild(lines);
-    resultDiv.appendChild(div);
-  });
-});  </script>
+        const lines = document.createElement("div");
+        lines.className = "lines";
+        lines.innerHTML = entry.系譜名.join("<br>");
+
+        div.appendChild(name);
+        div.appendChild(lines);
+        resultDiv.appendChild(div);
+      });
+    });
+  </script>
 </body>
 </html>
