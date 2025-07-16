@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>つりがき索引システム</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
     body {
       font-family: 'Noto Serif JP', serif;
@@ -13,11 +13,11 @@
       color: #333;
       padding: 1em;
     }
-    input, select, button {
+    input {
       font-size: 1.2em;
       padding: 0.5em;
-      margin-bottom: 1em;
       width: 100%;
+      margin-bottom: 1em;
     }
     .result {
       padding-top: 1em;
@@ -33,17 +33,19 @@
     .lines {
       white-space: pre-wrap;
     }
+    @media screen and (max-width: 600px) {
+      body {
+        font-size: 1em;
+      }
+      input {
+        font-size: 1em;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>つりがき索引システム</h1>
-  <input type="text" id="search" placeholder="神名または系譜名を入力 (例:とようけ、そさのを系)" />
-  <select id="sort">
-    <option value="">並び替えなし</option>
-    <option value="ふりがな">ふりがな順</option>
-    <option value="ご神名">ご神名順</option>
-  </select>
-  <button id="showAll">全件表示</button>
+  <input type="text" id="search" placeholder="ご神名や系譜名を入力 (例:とようけ、そさのを)" />
   <div class="result" id="result"></div>
 
   <script>
@@ -55,28 +57,40 @@
 
     let data = [];
 
-    // JSON読み込み
     fetch("tsurigaki_index.json")
       .then(res => res.json())
-      .then(json => data = json)
+      .then(json => {
+        data = json;
+        showResults(""); // 初期表示：全件ふりがな順
+      })
       .catch(err => console.error("データ読み込み失敗:", err));
 
-    function displayResults(results) {
-      const sortKey = document.getElementById("sort").value;
-      if (sortKey === "ふりがな") {
-        results.sort((a, b) => a.ふりがな.localeCompare(b.ふりがな));
-      } else if (sortKey === "ご神名") {
-        results.sort((a, b) => a.ご神名.localeCompare(b.ご神名));
-      }
+    document.getElementById("search").addEventListener("input", () => {
+      const keyword = toKatakana(document.getElementById("search").value.trim());
+      showResults(keyword);
+    });
 
+    function showResults(keyword) {
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
+      const filtered = keyword
+        ? data.filter(entry =>
+            (entry.ふりがな && toKatakana(entry.ふりがな).includes(keyword)) ||
+            (entry.系譜名 && entry.系譜名.some(k => toKatakana(k).includes(keyword)))
+          )
+        : data;
+
+      // 🔸常にふりがな順でソート
+      filtered.sort((a, b) =>
+        toKatakana(a.ふりがな || "").localeCompare(toKatakana(b.ふりがな || ""))
+      );
+
       const count = document.createElement("div");
-      count.textContent = `${results.length} 件見つかりました`;
+      count.textContent = `${filtered.length} 件見つかりました`;
       resultDiv.appendChild(count);
 
-      results.forEach(entry => {
+      filtered.forEach(entry => {
         const div = document.createElement("div");
         div.className = "entry";
 
@@ -93,31 +107,6 @@
         resultDiv.appendChild(div);
       });
     }
-
-    document.getElementById("search").addEventListener("input", () => {
-      const keyword = toKatakana(document.getElementById("search").value.trim());
-      if (!keyword) return;
-
-      const results = data.filter(entry =>
-        toKatakana(entry.ふりがな).includes(keyword) ||
-        entry.系譜名.some(k => toKatakana(k).includes(keyword))
-      );
-
-      displayResults(results);
-    });
-
-    document.getElementById("sort").addEventListener("change", () => {
-      const keyword = toKatakana(document.getElementById("search").value.trim());
-      const results = data.filter(entry =>
-        toKatakana(entry.ふりがな).includes(keyword) ||
-        entry.系譜名.some(k => toKatakana(k).includes(keyword))
-      );
-      displayResults(results);
-    });
-
-    document.getElementById("showAll").addEventListener("click", () => {
-      displayResults([...data]);
-    });
   </script>
 </body>
 </html>
