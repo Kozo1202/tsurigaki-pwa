@@ -19,18 +19,6 @@
       width: 100%;
       margin-bottom: 1em;
     }
-    .radio-group {
-      display: flex;
-      gap: 2em;
-      align-items: center;
-      margin-bottom: 1em;
-    }
-    .radio-label {
-      font-size: 1.1em;
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-    }
     .result {
       padding-top: 1em;
       border-top: 1px solid #ccc;
@@ -45,6 +33,15 @@
     .lines {
       white-space: pre-wrap;
     }
+    .radio-group {
+      display: flex;
+      gap: 1em;
+      margin-bottom: 1em;
+    }
+    .radio-label {
+      white-space: nowrap;
+      min-width: 10em;
+    }
     @media screen and (max-width: 600px) {
       body {
         font-size: 1em;
@@ -52,20 +49,22 @@
       input, select {
         font-size: 1em;
       }
-      .radio-group {
-        flex-direction: column;
-        align-items: flex-start;
-      }
     }
   </style>
 </head>
 <body>
   <h1>つりがき索引システム</h1>
 
-  <!-- 🔘 モード選択 横並び -->
+  <!-- 🔘 モード選択（横並び） -->
   <div class="radio-group">
-    <label class="radio-label"><input type="radio" name="mode" value="name" checked>ご神名で検索</label>
-    <label class="radio-label"><input type="radio" name="mode" value="line">系譜名で検索</label>
+    <label class="radio-label">
+      <input type="radio" name="mode" value="name" checked />
+      ご神名で検索
+    </label>
+    <label class="radio-label">
+      <input type="radio" name="mode" value="line" />
+      系譜名で検索
+    </label>
   </div>
 
   <!-- 🔍 ご神名の入力欄 -->
@@ -93,7 +92,6 @@
         data = json;
         showResults(); // 初期表示
 
-        // 🔽 系譜名の重複除去＋ソート＋プルダウン生成
         const uniqueLines = [...new Set(data.flatMap(entry => entry.系譜名))].sort();
         const lineSelect = document.getElementById("searchLine");
         uniqueLines.forEach(line => {
@@ -105,23 +103,20 @@
       })
       .catch(err => console.error("データ読み込み失敗:", err));
 
-    // 🔁 モード切替
     document.querySelectorAll('input[name="mode"]').forEach(radio => {
       radio.addEventListener("change", () => {
         const mode = document.querySelector('input[name="mode"]:checked').value;
         document.getElementById("searchName").style.display = mode === "name" ? "block" : "none";
         document.getElementById("searchLine").style.display = mode === "line" ? "block" : "none";
-        showResults(); // 全件表示
+        showResults();
       });
     });
 
-    // ご神名の入力
     document.getElementById("searchName").addEventListener("input", () => {
       const keyword = toKatakana(document.getElementById("searchName").value.trim());
       showResults(keyword, "name");
     });
 
-    // 系譜名のプルダウン
     document.getElementById("searchLine").addEventListener("change", () => {
       const line = document.getElementById("searchLine").value;
       showResults(line, "line");
@@ -145,7 +140,6 @@
         );
       }
 
-      // ふりがな順でソート
       filtered.sort((a, b) =>
         toKatakana(a.ふりがな || "").localeCompare(toKatakana(b.ふりがな || ""))
       );
