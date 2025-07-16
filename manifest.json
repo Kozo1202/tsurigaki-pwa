@@ -1,10 +1,10 @@
 {
-  "name": "ツリガキ系統検索",
-  "short_name": "ツリガキ検索",
+  "name": "ツリガキ索引システム",
+  "short_name": "ツリガキ",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fdfaf3",
-  "theme_color": "#333333",
+  "background_color": "#fffbe6",
+  "theme_color": "#663300",
   "icons": [
     {
       "src": "icon-192.png",
