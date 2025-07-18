@@ -2,7 +2,7 @@
 {
   "name": "ツリガキPWA",
   "short_name": "ツリガキ",
-  "start_url": "./index.html",
+  "start_url": "/tsurigaki-pwa/index.html"
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
